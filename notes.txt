@@ -1,0 +1,12 @@
+Linux systems install espeak:
+
+Arch based:
+sudo pacman -S espeak
+Also install:
+pacman -S alsa-utils
+
+
+Debian based:
+sudo apt install espeak
+
+
