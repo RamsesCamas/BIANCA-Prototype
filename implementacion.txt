@@ -1,0 +1,5 @@
+
+El sistema cuenta usa la librería de reconocimiento de voz proporcionada por Google, que a su vez es similar a la usada en su sistema de "Google Translate", siendo la versión en este proyecto considerablemente inferior, dada su dificultad de reconocer palabras en el idioma español, es por ello que para acciones más complejas en las que el sistema demostró mostrar dificultad de procesar la voz, se optó por el uso del idioma inglés; haciendo esto se pudo notar una mejoría en cuanto al reconocimiento de voz.
+
+Dada a la cantidad finita de instrucciones que hemos modelado, se optó por el uso de un autómata finito determinista (DFA por sus siglas en inglés) en lugar de un autómata finito no determinista (NFA por sus siglas en inglés) como se tenía planeado.
+
