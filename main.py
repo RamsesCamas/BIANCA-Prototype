@@ -1,5 +1,5 @@
 import speech_recognition as sr
-from tkinter import Tk, Label, Button, PhotoImage,font
+from tkinter import Tk,Button, PhotoImage
 import pyttsx3
 import io
 import pyglet
@@ -11,9 +11,11 @@ import os
 import wikipedia
 import re
 import requests
+import nltk
+from random import randint
 
 automata_commands = {
-    'S': {'o', 'p', 'e', 'n', ' ', 'c', 'a', 'l', 'u', 't', 'r', 'm', 'b', 'B', 's', 'Y', 'W', 'i', 'k', 'd', 'h'},
+    'S': {'o', 'p', 'e', 'n', ' ', 'c', 'a', 'l', 'u', 't', 'r', 'm', 'b', 'B', 's', 'Y', 'W', 'i', 'k', 'd', 'h','T'},
     'Q': {'Q0', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 
             'Q15', 'Q16', 'Q17', 'Q18', 'Q19', 'Q20', 'Q21', 'Q22', 'Q23', 'Q24', 'Q25', 'Q26', 'Q27', 'Q28', 
             'Q29', 'Q30', 'Q31', 'Q32', 'Q33', 'Q34', 'Q35', 'Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41', 'Q42', 
@@ -23,12 +25,27 @@ automata_commands = {
     ('Q7','c'):'Q8',('Q8','u'):'Q9',('Q9','l'):'Q10',('Q10','a'):'Q11',('Q11','t'):'Q12',('Q12','e'):'Q13',('Q14','e'):'Q15',
     ('Q15','m'):'Q16',('Q16','e'):'Q17',('Q17','m'):'Q18',('Q18','b'):'Q19',('Q19','e'):'Q20',('Q20','r'):'Q21',
     ('Q22','a'):'Q23',('Q23','b'):'Q24',('Q24','l'):'Q25',('Q25','e'):'Q26',('Q26','m'):'Q27',('Q27','o'):'Q28',('Q28','s'):'Q29',
-    ('Q30','u'):'Q31',('Q31','s'):'Q32',('Q32','c'):'Q33',('Q33','a'):'Q34',('Q34',' '):'Q35',('Q35','e'):'Q36',('Q36','n'):'Q37',('Q37',' '):'Q38',('Q38','Y'):'Q39',('Q38','W'):'Q46',('Q39','o'):'Q40',('Q40','u'):'Q41',('Q41','t'):'Q42',('Q42','u'):'Q43',('Q43','b'):'Q44',('Q44','e'):'Q45',('Q46','i'):'Q47',('Q47','k'):'Q48',('Q48','i'):'Q49',('Q49','p'):'Q50',('Q50','e'):'Q51',('Q51','d'):'Q52',('Q52','i'):'Q53',('Q53','a'):'Q54'},
+    ('Q30','u'):'Q31',('Q31','s'):'Q32',('Q32','c'):'Q33',('Q33','a'):'Q34',('Q34',' '):'Q35',('Q35','e'):'Q36',('Q36','n'):'Q37',('Q37',' '):'Q38',('Q38','Y'):'Q39',('Q38','W'):'Q46',('Q39','o'):'Q40',('Q40','u'):'Q41',('Q41','T'):'Q42',('Q42','u'):'Q43',('Q43','b'):'Q44',('Q44','e'):'Q45',('Q46','i'):'Q47',('Q47','k'):'Q48',('Q48','i'):'Q49',('Q49','p'):'Q50',('Q50','e'):'Q51',('Q51','d'):'Q52',('Q52','i'):'Q53',('Q53','a'):'Q54'},
     'q0': 'Q0',
     'F': {'Q4','Q13','Q21','Q29','Q45','Q54'}
 }
 
-COMMANDS = ['open','calculate','remember', 'Busca en Youtube','Busca en Wikipedia','hablemos']
+joke_grammar = nltk.CFG.fromstring("""
+S -> FK WQ A R
+FK -> K K
+K -> "toc" | "knock"
+WQ -> SIU QQ BE SID
+QQ -> "Quién" | "Qué" | "Cómo"
+BE -> "es" | "fue"
+SIU -> "¿"
+SID -> "?"
+A -> SER P | WQ Q
+SER -> "Soy"
+P -> "yo"
+R -> "jajaja"
+""")
+
+COMMANDS = ['open','calculate','remember', 'Busca en YouTube','Busca en Wikipedia','hablemos']
 OPEN_COMMANDS = ['calculator','Visual Studio code','documents folder','notion','download folder','browser','Spotify']
 GREETINGS = ['hello Bianca', 'Hello Bianca', 'Hola Bianca', 'hola Bianca']
 GREETINGS_RAM = ['hola Bianca yo soy Ram']
@@ -119,6 +136,7 @@ def remember_something(topic):
     speak(f'Tienes un recordatorio de: {topic}')
 
 def get_wiki(search_topic):
+    wikipedia.set_lang("es")
     search_result = wikipedia.search(search_topic,results=2)
     for result in search_result:
         try:
@@ -158,7 +176,6 @@ def get_info_video(url_video,search_youtube):
         info_video = f'{video_title}\n{url_video}\nDe: {video_owner} - Subido el {video_date}\n\n'
         with open(f'{search_youtube}.txt',mode='a',encoding='utf-8') as file:
             file.write(info_video)
-        speak('Te he creado un archivo con los videos que pediste')
 
 
 def get_youtube_video(search_youtube):
@@ -167,10 +184,36 @@ def get_youtube_video(search_youtube):
     videos_page = search_videos(search_youtube)
     for i in range(5):
         get_info_video(videos_page[i],search_youtube)
+    speak('Te he creado un archivo con los videos que pediste')
 
+def tell_bad_joke():
+    K = ['toc','knock']
+    QQ = ['Quién', 'Qué', 'Cómo']
+    BE = ['es','fue']
+
+    toc = K[randint(0,1)]
+    joke = f'{toc} {toc}'
+    question_choose = QQ[randint(0,2)]
+    verb = BE[randint(0,1)]
+    question = f' ¿ {question_choose} {verb} ?'
+    joke = joke + question
+    choose = randint(0,1)
+    if choose == 0:
+        joke = joke + ' Soy yo jajaja'
+    else:
+        joke = joke + question + f' {question_choose} ' + 'jajaja'
+
+    sent = joke.split()
+    rd_parser = nltk.RecursiveDescentParser(joke_grammar)
+    try:
+        cfg_parsed = rd_parser.parse(sent)
+        if cfg_parsed:
+            speak(joke)
+            speak('perdón, no cuento con sentido del humor')
+    except:
+        print('La entrada no coincide con la gramática de chistes 2')
 
 def listen_and_speak():
-    print('Ya entramos')
     global had_presented
     if had_presented:
         command = recog_voice()
@@ -196,6 +239,7 @@ def listen_and_speak():
                 speak('¿Qué quieres buscar en Youtube?')
                 time.sleep(1)
                 search_youtube = recog_voice()
+                get_youtube_video(search_youtube)
             elif command == COMMANDS[4]:
                 speak('¿Qué quieres buscar en Wikipedia?')
                 time.sleep(1)
@@ -204,9 +248,11 @@ def listen_and_speak():
                     get_wiki(search_wiki)
                 else: speak('No te entendí')
             elif command == COMMANDS[5]:
-                print('hablar')
+                speak('Aún no dispongo de la capacidad de entablar una conversación, pero te puedo contar un chiste')
+                tell_bad_joke()
+        else:
+            speak('No entendí, prueba repetir tu petición por favor')
     else:
-        print('A presentarse')
         greeting = recog_voice()
         global user_name
         if greeting in GREETINGS_RAM:
@@ -229,7 +275,6 @@ def listen_and_speak():
             had_presented = True
 
 class App(threading.Thread):
-    
     def __init__(self):
         threading.Thread.__init__(self)
         self.start()

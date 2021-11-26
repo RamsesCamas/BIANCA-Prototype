@@ -9,6 +9,7 @@ def get_wiki(search_topic):
             print('Error')
 
 if __name__ == '__main__':
+    wikipedia.set_lang("es")
     search_result = wikipedia.search('Python',results=3)
     print(search_result)
     for result in search_result:
