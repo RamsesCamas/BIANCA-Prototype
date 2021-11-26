@@ -4,7 +4,7 @@ import pyttsx3
 
 engine = pyttsx3.init()
 recog = sr.Recognizer()
-mic = sr.Microphone(device_index=6)
+mic = sr.Microphone(device_index=7)
 voices = engine.getProperty('voices')
 GREETINGS = ['hello Bianca', 'Hello Bianca', 'Hola Bianca', 'hola Bianca']
 
